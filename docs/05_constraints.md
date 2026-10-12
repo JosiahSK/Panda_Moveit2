@@ -178,6 +178,8 @@ move_group.clearPathConstraints();
 
 ## Constraint Satisfaction Rate
 
+![Constraints Benchmark](images/constraints_benchmark.png)
+
 Constraints make planning harder. This table shows empirical success rates:
 
 | Constraint Type | Success Rate | Avg Plan Time |

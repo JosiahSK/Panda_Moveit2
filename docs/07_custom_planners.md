@@ -164,6 +164,8 @@ chomp:
 
 ## 5. Planner Benchmarking Script
 
+![Planner Benchmark Chart](images/planner_benchmark.png)
+
 ```python
 #!/usr/bin/env python3
 """

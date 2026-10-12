@@ -14,6 +14,22 @@
 - **Trajectory execution** — send commands to real or simulated robots
 - **Perception integration** — process point clouds and depth images
 
+![MoveIt 2 Architecture](images/moveit2_architecture.png)
+
+---
+
+## 🐣 Beginner's Mental Model & Glossary
+
+If you are new to robotics and MoveIt, here are 5 foundational concepts simplified:
+
+| Concept | What It Is In Plain English | Why It Matters |
+|---|---|---|
+| **URDF** | The robot's biological skeleton (links, joints, 3D meshes, collision boundaries). | Tells MoveIt where the joints bend and how long each arm segment is. |
+| **SRDF** | The robot's rulebook (groups named `panda_arm`, predefined poses like `ready`, collision exemptions). | Speeds up collision checking by ignoring links that always touch (like joint 1 & 2). |
+| **End-Effector (EEF)** | The robot's hand or fingertip (`panda_hand` or `panda_link8`). | You usually specify *where the hand should go in 3D space*, not each joint angle. |
+| **Inverse Kinematics (IK)** | The mathematical equation that solves: *"To put the hand at (X, Y, Z), which angle should each of the 7 motors turn?"* | Solves coordinate goals into actual motor commands. |
+| **Planning vs. Execution** | **Planning** simulates and checks the path for collisions. **Execution** actually sends electrical signals to the robot motors. | You can safely test trajectories in RViz before risking physical hardware! |
+
 ---
 
 ## Key Concepts

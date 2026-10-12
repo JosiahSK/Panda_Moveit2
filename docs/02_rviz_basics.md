@@ -20,6 +20,8 @@ RViz will open with the Panda robot loaded. You should see:
 
 ## RViz Interface Tour
 
+![RViz Motion Planning Interface](images/rviz_motion_planning_gui.png)
+
 ### MotionPlanning Panel
 
 The MotionPlanning panel has four main tabs:
