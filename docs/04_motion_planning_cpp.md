@@ -1,6 +1,6 @@
 # Lesson 04 — C++ Motion Planning with MoveIt 2
 
-> **Branch:** `humble` | ROS 2 Humble Hawksbill
+> **Branch:** `jazzy` | ROS 2 Jazzy Jalisco
 
 ---
 

@@ -4,7 +4,7 @@
   <name>panda_moveit2_cpp</name>
   <version>1.0.0</version>
   <description>
-    MoveIt 2 Panda tutorial C++ package for ROS 2 Humble.
+    MoveIt 2 Panda tutorial C++ package for ROS 2 Jazzy.
     Covers joint planning, Cartesian planning, collision objects, and constraints in C++.
   </description>
   <maintainer email="your.email@example.com">JosiahSK</maintainer>

@@ -4,7 +4,7 @@
   <name>panda_moveit2_tutorials</name>
   <version>1.0.0</version>
   <description>
-    MoveIt 2 Panda tutorial Python package for ROS 2 Humble.
+    MoveIt 2 Panda tutorial Python package for ROS 2 Jazzy.
     Covers joint planning, Cartesian planning, constraints, and pick-and-place.
   </description>
   <maintainer email="your.email@example.com">JosiahSK</maintainer>
