@@ -110,6 +110,22 @@ flowchart LR
 
 ---
 
+## 🚀 5-Minute Student Sandbox (Try It Now!)
+
+Want to test motion planning immediately before reading the code?
+
+```bash
+# 1. Launch Panda in RViz 2
+ros2 launch moveit_resources_panda_moveit_config demo.launch.py
+
+# 2. In RViz:
+#    a. Locate the "MotionPlanning" panel on the left.
+#    b. Change "Goal State" to "ready".
+#    c. Click "Plan & Execute" — watch the Panda arm glide into position!
+```
+
+---
+
 ## ⚡ Quick Start
 
 ### Prerequisites
