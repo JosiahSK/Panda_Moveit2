@@ -1,6 +1,6 @@
 # Lesson 05 — Planning with Constraints
 
-> **Branch:** `humble` | ROS 2 Humble Hawksbill
+> **Branch:** `jazzy` | ROS 2 Jazzy Jalisco
 
 ---
 

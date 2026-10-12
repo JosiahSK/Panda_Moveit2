@@ -1,6 +1,6 @@
 # Lesson 00 — MoveIt 2 Architecture Overview
 
-> **Branch:** `humble` | ROS 2 Humble Hawksbill
+> **Branch:** `jazzy` | ROS 2 Jazzy Jalisco
 
 ---
 

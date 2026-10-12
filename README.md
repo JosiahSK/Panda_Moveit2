@@ -1,13 +1,13 @@
 # 🤖 MoveIt 2 + Panda Robot — Complete Teaching Repository
 
-> **ROS 2 Humble Hawksbill** | Branch: `humble`  
-> For ROS 2 Jazzy, switch to the [`jazzy`](../../tree/jazzy) branch.
+> **ROS 2 Jazzy Jalisco** | Branch: `jazzy`  
+> For ROS 2 Humble (LTS), switch to the [`humble`](../../tree/humble) branch.
 
-[![ROS 2 Humble](https://img.shields.io/badge/ROS%202-Humble-blue?logo=ros)](https://docs.ros.org/en/humble/)
-[![MoveIt 2](https://img.shields.io/badge/MoveIt-2.x-orange)](https://moveit.ros.org/)
+[![ROS 2 Jazzy](https://img.shields.io/badge/ROS%202-Jazzy-purple?logo=ros)](https://docs.ros.org/en/jazzy/)
+[![MoveIt 2](https://img.shields.io/badge/MoveIt-2.8.x-orange)](https://moveit.ros.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.10-yellow?logo=python)](https://www.python.org/)
-[![C++](https://img.shields.io/badge/C++-17-blue?logo=cplusplus)](https://isocpp.org/)
+[![Python](https://img.shields.io/badge/Python-3.12-yellow?logo=python)](https://www.python.org/)
+[![C++](https://img.shields.io/badge/C++-20-blue?logo=cplusplus)](https://isocpp.org/)
 
 ---
 
@@ -113,25 +113,25 @@ flowchart LR
 ## ⚡ Quick Start
 
 ### Prerequisites
-- Ubuntu 22.04 (or WSL2 with Ubuntu 22.04)
-- ROS 2 Humble Hawksbill (see [Installation Guide](docs/01_installation.md))
+- Ubuntu 24.04 (or WSL2 with Ubuntu 24.04)
+- ROS 2 Jazzy Jalisco (see [Installation Guide](docs/01_installation.md))
 
 ### 1. Install Dependencies
 
 ```bash
 sudo apt update && sudo apt install -y \
-  ros-humble-moveit \
-  ros-humble-moveit-ros-planning-interface \
-  ros-humble-franka-ros2 \
-  ros-humble-ros2-control \
-  ros-humble-ros2-controllers
+  ros-jazzy-moveit \
+  ros-jazzy-moveit-ros-planning-interface \
+  ros-jazzy-franka-ros2 \
+  ros-jazzy-ros2-control \
+  ros-jazzy-ros2-controllers
 ```
 
 ### 2. Clone & Build
 
 ```bash
 mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
-git clone -b humble https://github.com/JosiahSK/panda_moveit2_tutorial.git
+git clone -b jazzy https://github.com/JosiahSK/panda_moveit2_tutorial.git
 cd ~/ros2_ws
 rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install
@@ -178,12 +178,12 @@ ros2 run panda_moveit2_cpp basic_motion_planner_cpp
 
 | Feature | `humble` branch | `jazzy` branch |
 |---------|----------------|----------------|
-| ROS 2 Version | Humble Hawksbill (LTS) | Jazzy Jalisco |
-| Ubuntu | 22.04 LTS | 24.04 LTS |
-| MoveIt 2 | 2.5.x | 2.8.x |
-| Python | 3.10 | 3.12 |
-| Key Differences | Classic `moveit_resources` | New `moveit_configs_utils` API |
-| Status | ✅ Supported until May 2027 | ✅ Active Development |
+| ROS 2 Version | Humble Hawksbill (LTS) | **Jazzy Jalisco** ← **(you are here)** |
+| Ubuntu | 22.04 LTS | **24.04 LTS** |
+| MoveIt 2 | 2.5.x | **2.8.x** |
+| Python | 3.10 | **3.12** |
+| Key Differences | Classic `moveit_resources` API | **New `moveit_configs_utils` API** |
+| Status | ✅ Supported until May 2027 | ✅ **Active Development** |
 
 ---
 

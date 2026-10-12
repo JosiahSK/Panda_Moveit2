@@ -1,6 +1,6 @@
 # Lesson 07 — Custom Planners & Tuning
 
-> **Branch:** `humble` | ROS 2 Humble Hawksbill
+> **Branch:** `jazzy` | ROS 2 Jazzy Jalisco
 
 ---
 

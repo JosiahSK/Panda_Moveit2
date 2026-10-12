@@ -1,6 +1,6 @@
-# Lesson 01 — Installation Guide (ROS 2 Humble)
+# Lesson 01 — Installation Guide (ROS 2 Jazzy)
 
-> **Branch:** `humble` | Ubuntu 22.04 LTS
+> **Branch:** `jazzy` | Ubuntu 24.04 LTS
 
 ---
 
@@ -8,16 +8,16 @@
 
 | Requirement | Version |
 |-------------|---------|
-| Ubuntu | 22.04 LTS (Jammy Jellyfish) |
-| ROS 2 | Humble Hawksbill |
-| Python | 3.10 |
-| CMake | ≥ 3.22 |
+| Ubuntu | 24.04 LTS (Noble Numbat) |
+| ROS 2 | Jazzy Jalisco |
+| Python | 3.12 |
+| CMake | ≥ 3.27 |
 | RAM | ≥ 8 GB recommended |
 | Disk Space | ≥ 10 GB free |
 
 ---
 
-## Step 1: Install ROS 2 Humble
+## Step 1: Install ROS 2 Jazzy
 
 ```bash
 # Set locale
@@ -37,14 +37,14 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 
 # Install ROS 2 Desktop (includes RViz)
 sudo apt update
-sudo apt install -y ros-humble-desktop python3-colcon-common-extensions python3-rosdep
+sudo apt install -y ros-jazzy-desktop python3-colcon-common-extensions python3-rosdep
 
 # Initialize rosdep
 sudo rosdep init
 rosdep update
 
 # Source ROS 2 (add to ~/.bashrc for permanent effect)
-echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -54,12 +54,12 @@ source ~/.bashrc
 
 ```bash
 sudo apt install -y \
-  ros-humble-moveit \
-  ros-humble-moveit-ros-planning-interface \
-  ros-humble-moveit-ros-visualization \
-  ros-humble-moveit-setup-assistant \
-  ros-humble-moveit-resources-panda-moveit-config \
-  ros-humble-moveit-resources-panda-description
+  ros-jazzy-moveit \
+  ros-jazzy-moveit-ros-planning-interface \
+  ros-jazzy-moveit-ros-visualization \
+  ros-jazzy-moveit-setup-assistant \
+  ros-jazzy-moveit-resources-panda-moveit-config \
+  ros-jazzy-moveit-resources-panda-description
 ```
 
 ---
@@ -68,11 +68,11 @@ sudo apt install -y \
 
 ```bash
 sudo apt install -y \
-  ros-humble-franka-ros2 \
-  ros-humble-ros2-control \
-  ros-humble-ros2-controllers \
-  ros-humble-gripper-controllers \
-  ros-humble-joint-trajectory-controller
+  ros-jazzy-franka-ros2 \
+  ros-jazzy-ros2-control \
+  ros-jazzy-ros2-controllers \
+  ros-jazzy-gripper-controllers \
+  ros-jazzy-joint-trajectory-controller
 ```
 
 ---
@@ -82,8 +82,8 @@ sudo apt install -y \
 ```bash
 mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
 
-# Clone the humble branch
-git clone -b humble https://github.com/JosiahSK/panda_moveit2_tutorial.git
+# Clone the jazzy branch
+git clone -b jazzy https://github.com/JosiahSK/panda_moveit2_tutorial.git
 
 # Install all ROS dependencies
 cd ~/ros2_ws
@@ -134,14 +134,14 @@ sudo apt install -y build-essential cmake
 ### ❌ RViz shows "No robot model loaded"
 ```bash
 # Re-source your workspace
-source /opt/ros/humble/setup.bash
+source /opt/ros/jazzy/setup.bash
 source ~/ros2_ws/install/setup.bash
 ```
 
 ### ❌ `rosdep install` fails
 ```bash
 # Update rosdep database
-rosdep update --rosdistro humble
+rosdep update --rosdistro jazzy
 ```
 
 ### ❌ ImportError with MoveIt Python bindings
