@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+install/
+log/
+
+# ROS 2 build dirs
+.colcon/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Doxygen
+doxygen_output/
