@@ -11,9 +11,33 @@ This lesson covers MoveIt 2 motion planning via the **C++ MoveGroupInterface** A
 - Direct access to the MoveIt 2 internal APIs
 - Better integration with `rclcpp` lifecycle nodes
 
----
+## Setup & C++ Tasks Quick Reference
 
-## Example 1: Basic Joint-Space Motion (C++)
+Make sure RViz is running:
+
+```bash
+# Terminal 1: Launch Panda in RViz
+ros2 launch moveit_resources_panda_moveit_config demo.launch.py
+```
+
+Build and run C++ executables in Terminal 2:
+
+```bash
+cd ~/ros2_ws
+colcon build --packages-select panda_moveit2_cpp
+source install/setup.bash
+```
+
+### 📋 C++ Tasks Quick Reference
+
+| Command | Task Description | Key C++ Classes Used |
+|---|---|---|
+| `ros2 run panda_moveit2_cpp basic_motion_planner_cpp` | Joint Target Planning | `MoveGroupInterface::setNamedTarget()`, `setJointValueTarget()` |
+| `ros2 run panda_moveit2_cpp pose_planner_cpp` | Cartesian Pose Planning | `MoveGroupInterface::setPoseTarget()`, `geometry_msgs::msg::Pose` |
+| `ros2 run panda_moveit2_cpp cartesian_planner_cpp` | Cartesian Waypoint Interpolation | `MoveGroupInterface::computeCartesianPath()` |
+| `ros2 run panda_moveit2_cpp scene_manager_cpp` | Collision Objects in Scene | `PlanningSceneInterface::applyCollisionObject()` |
+
+---
 
 **File:** [`src/panda_moveit2_cpp/src/basic_motion_planner.cpp`](../src/panda_moveit2_cpp/src/basic_motion_planner.cpp)
 

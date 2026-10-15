@@ -15,14 +15,32 @@ In this lesson, we use the **MoveIt 2 Python Bindings** (`moveit_py`) to:
 
 ---
 
-## Setup
+## Setup & Quick Execution
 
-Make sure the MoveIt demo is running in a separate terminal:
+Make sure the MoveIt demo is running in your first terminal:
 
 ```bash
 # Terminal 1: Start MoveIt + RViz
 ros2 launch moveit_resources_panda_moveit_config demo.launch.py
 ```
+
+In a second terminal, source your workspace and run any Python task:
+
+```bash
+source ~/ros2_ws/install/setup.bash
+```
+
+### 📋 Python Tasks Quick Reference
+
+| Command | Task Description | Key Concepts |
+|---|---|---|
+| `ros2 run panda_moveit2_tutorials basic_motion_planner` | Joint-space movement | Named states (`ready`), direct joint angles |
+| `ros2 run panda_moveit2_tutorials pose_goal_planner` | 6-DOF Cartesian target | Inverse kinematics, end-effector frames |
+| `ros2 run panda_moveit2_tutorials cartesian_path_planner` | Multi-waypoint inspection box | Straight-line paths, waypoint sequencing |
+| `ros2 run panda_moveit2_tutorials collision_avoidance_demo` | Planning around dynamic obstacles | PlanningScene, CollisionObject, detours |
+| `ros2 run panda_moveit2_tutorials constrained_motion_demo` | Upright orientation constraint | OrientationConstraint, liquid carrying |
+| `ros2 run panda_moveit2_tutorials pick_and_place` | 9-step pick & place pipeline | Multi-stage state machine, gripper control |
+| `ros2 run panda_moveit2_tutorials planner_benchmark` | OMPL algorithm benchmark | RRTConnect vs PRM vs LBKPIECE stats |
 
 ---
 

@@ -24,7 +24,11 @@ setup(
         'console_scripts': [
             'basic_motion_planner = panda_moveit2_tutorials.basic_motion_planner:main',
             'pose_goal_planner = panda_moveit2_tutorials.pose_goal_planner:main',
+            'cartesian_path_planner = panda_moveit2_tutorials.cartesian_path_planner:main',
+            'collision_avoidance_demo = panda_moveit2_tutorials.collision_avoidance_demo:main',
+            'constrained_motion_demo = panda_moveit2_tutorials.constrained_motion_demo:main',
             'pick_and_place = panda_moveit2_tutorials.pick_and_place:main',
+            'planner_benchmark = panda_moveit2_tutorials.planner_benchmark:main',
         ],
     },
 )
