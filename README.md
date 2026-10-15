@@ -156,22 +156,48 @@ source install/setup.bash
 
 ### 3. Launch Panda in RViz
 
+In your first terminal, launch the MoveIt 2 demo environment:
+
 ```bash
-# Launch the MoveIt demo with the Panda robot
 ros2 launch moveit_resources_panda_moveit_config demo.launch.py
 ```
 
-### 4. Run a Python Motion Planning Example
+*RViz will open displaying the Franka Panda arm with the MotionPlanning display plugin loaded.*
+
+---
+
+## 🎮 Hands-On Task Catalog & Execution Guide
+
+Open a **second terminal**, source your workspace, and run any of the tasks below:
 
 ```bash
-ros2 run panda_moveit2_tutorials basic_motion_planner
+source ~/ros2_ws/install/setup.bash
 ```
 
-### 5. Run a C++ Motion Planning Example
+### 🐍 Python Tasks (`panda_moveit2_tutorials`)
 
-```bash
-ros2 run panda_moveit2_cpp basic_motion_planner_cpp
-```
+| Task # | Command | What It Does & What to Watch For in RViz |
+|---|---|---|
+| **Task 1: Basic Joint Planning** | `ros2 run panda_moveit2_tutorials basic_motion_planner` | **Joint-space motion**: Commands the robot first to predefined `ready` pose, then directly sets individual joint radian angles (`panda_joint1` to `panda_joint7`). Watch the arm transition between joint states. |
+| **Task 2: Cartesian Pose Target** | `ros2 run panda_moveit2_tutorials pose_goal_planner` | **Inverse Kinematics (IK)**: Sets a 6-DOF Cartesian target pose $(x=0.307, y=0.0, z=0.590)$ with gripper pointing down. MoveIt calculates the inverse kinematics and executes smooth trajectory. |
+| **Task 3: Cartesian Inspection Path** | `ros2 run panda_moveit2_tutorials cartesian_path_planner` | **Continuous Waypoints**: Generates a straight-line rectangular inspection pattern $(20\text{cm} \times 20\text{cm})$ in front of the robot. Demonstrates multi-waypoint straight-line Cartesian execution. |
+| **Task 4: Collision Avoidance Scene** | `ros2 run panda_moveit2_tutorials collision_avoidance_demo` | **Dynamic Obstacle Avoidance**: Spawns a table and a tall red wall obstacle directly in front of the arm. MoveIt dynamically plans an arc *over and around* the barrier without touching it, then cleans up the scene. |
+| **Task 5: Path Constraints** | `ros2 run panda_moveit2_tutorials constrained_motion_demo` | **Carrying Liquid Demo**: Enforces an `OrientationConstraint` keeping the gripper strictly vertical ($\pm 0.25\text{ rad}$) throughout a long sideways trajectory. Perfect for showing students how to carry a full glass of water. |
+| **Task 6: Pick & Place Pipeline** | `ros2 run panda_moveit2_tutorials pick_and_place` | **Full 9-Stage Grasp Pipeline**: Approaches object from above $\to$ opens gripper $\to$ descends $\to$ grasps $\to$ lifts $\to$ translates $\to$ places on destination platform $\to$ opens fingers $\to$ returns home. |
+| **Task 7: Planner Benchmarking** | `ros2 run panda_moveit2_tutorials planner_benchmark` | **Algorithm Comparison**: Benchmarks `RRTConnect`, `PRM`, and `LBKPIECE` over 5 runs each. Prints real-time planning times and success rate statistics directly to terminal. |
+
+---
+
+### ⚡ C++ Tasks (`panda_moveit2_cpp`)
+
+High-performance native C++ implementations using `moveit::planning_interface::MoveGroupInterface`:
+
+| Task # | Command | Explanation |
+|---|---|---|
+| **Task 8: C++ Joint Planner** | `ros2 run panda_moveit2_cpp basic_motion_planner_cpp` | Initializes a multi-threaded executor node, sets joint value vector targets, and plans with max velocity/acceleration scaling. |
+| **Task 9: C++ Pose Goal Planner** | `ros2 run panda_moveit2_cpp pose_planner_cpp` | Sets 6-DOF position and quaternion orientation via `setPoseTarget()` and monitors execution status. |
+| **Task 10: C++ Cartesian Waypoints** | `ros2 run panda_moveit2_cpp cartesian_planner_cpp` | Uses `computeCartesianPath()` with a $1\text{cm}$ interpolation step resolution and jump threshold validation. |
+| **Task 11: C++ Planning Scene Manager** | `ros2 run panda_moveit2_cpp scene_manager_cpp` | Programmatically adds primitive collision objects (`shape_msgs/SolidPrimitive::BOX`) to the world, plans around them, and cleans them up. |
 
 ---
 
@@ -198,7 +224,7 @@ ros2 run panda_moveit2_cpp basic_motion_planner_cpp
 | Ubuntu | 22.04 LTS | **24.04 LTS** |
 | MoveIt 2 | 2.5.x | **2.8.x** |
 | Python | 3.10 | **3.12** |
-| Key Differences | Classic `moveit_resources` API | **New `moveit_configs_utils` API** |
+| Key Differences | Classic `moveit_resources` | **New `moveit_configs_utils` API** |
 | Status | ✅ Supported until May 2027 | ✅ **Active Development** |
 
 ---
