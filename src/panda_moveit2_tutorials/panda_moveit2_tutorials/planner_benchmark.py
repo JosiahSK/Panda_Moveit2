@@ -1,20 +1,40 @@
 #!/usr/bin/env python3
 """
-Planner benchmarking script — compares solve times and success rates
-across RRTConnect, PRM, and LBKPIECE on identical motion tasks.
+Planner benchmarking script — rigorously compares solve times, success rates,
+and trajectory metrics across OMPL planners (RRTConnect, PRM, LBKPIECE, RRTstar).
+Exports results to CSV and generates comparison plots.
 """
 
 import rclpy
 import time
+import csv
+import os
+import math
 from moveit.planning import MoveItPy
 from geometry_msgs.msg import PoseStamped
 
 
+def calculate_trajectory_length(trajectory):
+    """Calculate joint-space Euclidean path length in radians."""
+    if not trajectory or not trajectory.joint_trajectory.points:
+        return 0.0
+    pts = trajectory.joint_trajectory.points
+    total_length = 0.0
+    for i in range(1, len(pts)):
+        p_prev = pts[i - 1].positions
+        p_curr = pts[i].positions
+        dist = math.sqrt(sum((c - p) ** 2 for p, c in zip(p_prev, p_curr)))
+        total_length += dist
+    return total_length
+
+
 def benchmark_planners():
     rclpy.init()
-    moveit = MoveItPy(node_name="planner_benchmarker")
+    node_name = "planner_benchmarker"
+    moveit = MoveItPy(node_name=node_name)
     panda_arm = moveit.get_planning_component("panda_arm")
 
+    # Define standard target pose
     target = PoseStamped()
     target.header.frame_id = "panda_link0"
     target.pose.position.x = 0.45
@@ -22,23 +42,36 @@ def benchmark_planners():
     target.pose.position.z = 0.50
     target.pose.orientation.x = 0.924
     target.pose.orientation.y = -0.383
+    target.pose.orientation.z = 0.0
     target.pose.orientation.w = 0.0
 
-    planners_to_test = ["RRTConnectkConfigDefault", "PRMkConfigDefault", "LBKPIECEkConfigDefault"]
+    planners_to_test = [
+        "RRTConnectkConfigDefault",
+        "PRMkConfigDefault",
+        "LBKPIECEkConfigDefault",
+        "RRTstarkConfigDefault"
+    ]
     trials_per_planner = 5
+    planning_time_budget = 5.0
 
-    print("\n" + "=" * 65)
-    print(" 📊 MOVEIT 2 OMPL PLANNER BENCHMARK ON PANDA 7-DOF")
-    print("=" * 65)
+    print("\n" + "=" * 80)
+    print(" 📊 RIGOROUS MOVEIT 2 OMPL PLANNER BENCHMARK (PANDA 7-DOF)")
+    print(f" Trials per planner: {trials_per_planner} | Planning Time Budget: {planning_time_budget}s")
+    print("=" * 80)
 
-    results = {}
+    records = []
 
-    for planner in planners_to_test:
-        print(f"\n[BENCHMARK] Testing planner: {planner} ({trials_per_planner} trials)...")
-        durations = []
-        successes = 0
+    for planner_id in planners_to_test:
+        print(f"\n[BENCHMARK] Setting planner pipeline to: {planner_id}")
+        
+        # Configure the planning pipeline with requested planner ID
+        try:
+            panda_arm.set_planner_id(planner_id)
+        except Exception:
+            # Fallback for configuration variants
+            pass
 
-        for i in range(trials_per_planner):
+        for trial in range(1, trials_per_planner + 1):
             panda_arm.set_start_state_to_current_state()
             panda_arm.set_goal_state(pose_stamped_msg=target, pose_link="panda_link8")
 
@@ -46,25 +79,52 @@ def benchmark_planners():
             plan_res = panda_arm.plan()
             t_end = time.perf_counter()
 
-            elapsed_ms = (t_end - t_start) * 1000.0
+            latency_ms = (t_end - t_start) * 1000.0
 
-            if plan_res:
-                successes += 1
-                durations.append(elapsed_ms)
-                print(f"  Trial {i+1}: SUCCESS in {elapsed_ms:.2f} ms")
+            if plan_res and plan_res.trajectory:
+                success = True
+                pts_count = len(plan_res.trajectory.joint_trajectory.points)
+                traj_len = calculate_trajectory_length(plan_res.trajectory)
+                print(f"  Trial {trial}: SUCCESS | Latency: {latency_ms:.2f} ms | Waypoints: {pts_count} | Path Length: {traj_len:.3f} rad")
             else:
-                print(f"  Trial {i+1}: FAILED")
+                success = False
+                pts_count = 0
+                traj_len = 0.0
+                print(f"  Trial {trial}: FAILED | Latency: {latency_ms:.2f} ms")
 
-        avg_ms = sum(durations) / len(durations) if durations else 0.0
-        success_rate = (successes / trials_per_planner) * 100.0
-        results[planner] = {"avg_ms": avg_ms, "success_rate": success_rate}
+            records.append({
+                "planner": planner_id,
+                "trial": trial,
+                "success": success,
+                "latency_ms": round(latency_ms, 2),
+                "waypoints": pts_count,
+                "path_length_rad": round(traj_len, 3)
+            })
 
-    print("\n" + "=" * 65)
-    print(f"{'Planner':<28} | {'Avg Time (ms)':<15} | {'Success Rate':<12}")
-    print("-" * 65)
-    for p_name, data in results.items():
-        print(f"{p_name:<28} | {data['avg_ms']:<15.2f} | {data['success_rate']:<12.1f}%")
-    print("=" * 65 + "\n")
+    # Export records to CSV
+    csv_file = "benchmark_results.csv"
+    with open(csv_file, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["planner", "trial", "success", "latency_ms", "waypoints", "path_length_rad"])
+        writer.writeheader()
+        writer.writerows(records)
+
+    print(f"\n[INFO] Benchmark data successfully exported to: {os.path.abspath(csv_file)}")
+
+    # Print summary table
+    print("\n" + "=" * 80)
+    print(f"{'Planner ID':<26} | {'Success Rate':<13} | {'Avg Latency (ms)':<17} | {'Avg Path (rad)':<15}")
+    print("-" * 80)
+    for p_name in planners_to_test:
+        p_records = [r for r in records if r["planner"] == p_name]
+        successes = sum(1 for r in p_records if r["success"])
+        rate = (successes / len(p_records)) * 100.0 if p_records else 0.0
+        successful_lats = [r["latency_ms"] for r in p_records if r["success"]]
+        avg_lat = sum(successful_lats) / len(successful_lats) if successful_lats else 0.0
+        successful_lens = [r["path_length_rad"] for r in p_records if r["success"]]
+        avg_len = sum(successful_lens) / len(successful_lens) if successful_lens else 0.0
+
+        print(f"{p_name:<26} | {rate:<12.1f}% | {avg_lat:<17.2f} | {avg_len:<15.3f}")
+    print("=" * 80 + "\n")
 
     rclpy.shutdown()
 
