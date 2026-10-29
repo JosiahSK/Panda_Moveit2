@@ -7,13 +7,19 @@ Lesson 03, Example 2.
 import rclpy
 from moveit.planning import MoveItPy
 from geometry_msgs.msg import PoseStamped
+from panda_moveit2_tutorials.moveit_config_helper import (
+    get_moveit_config_dict,
+    ensure_valid_start_state,
+    execute_trajectory,
+    clean_exit,
+)
 
 
 def main():
     rclpy.init()
-    moveit = MoveItPy(node_name="panda_pose_planner")
+    print("[INFO] Initializing MoveItPy for pose_goal_planner...")
+    moveit = MoveItPy(node_name="pose_goal_planner", config_dict=get_moveit_config_dict())
     panda_arm = moveit.get_planning_component("panda_arm")
-    robot = moveit.get_robot()
 
     target = PoseStamped()
     target.header.frame_id = "panda_link0"
@@ -25,18 +31,20 @@ def main():
     target.pose.orientation.z = 0.0
     target.pose.orientation.w = 0.0
 
-    panda_arm.set_start_state_to_current_state()
+    print(f"[INFO] Planning motion to target pose: ({target.pose.position.x}, {target.pose.position.y}, {target.pose.position.z})...")
+    ensure_valid_start_state(panda_arm)
     panda_arm.set_goal_state(pose_stamped_msg=target, pose_link="panda_link8")
 
     result = panda_arm.plan()
-    if result:
-        n = len(result.trajectory.joint_trajectory.points)
-        print(f"[INFO] Plan found: {n} waypoints. Executing...")
-        robot.execute(result.trajectory, controllers=[])
+    if result and result.trajectory and len(result.trajectory) > 0:
+        n = len(result.trajectory)
+        print(f"[SUCCESS] Plan found: {n} trajectory waypoints.")
+        execute_trajectory(moveit, result.trajectory)
+        print("[INFO] pose_goal_planner execution completed successfully.")
+        clean_exit(0)
     else:
-        print("[WARN] No plan found for pose goal.")
-
-    rclpy.shutdown()
+        print("[ERROR] No valid trajectory found for target pose.")
+        clean_exit(1)
 
 
 if __name__ == "__main__":

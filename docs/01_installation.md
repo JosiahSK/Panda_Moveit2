@@ -50,13 +50,16 @@ source ~/.bashrc
 
 ---
 
-## Step 2: Install MoveIt 2
+## Step 2: Install MoveIt 2 & MoveItPy
 
 ```bash
 sudo apt install -y \
   ros-jazzy-moveit \
+  ros-jazzy-moveit-py \
+  ros-jazzy-moveit-configs-utils \
   ros-jazzy-moveit-ros-planning-interface \
   ros-jazzy-moveit-ros-visualization \
+  ros-jazzy-moveit-visual-tools \
   ros-jazzy-moveit-setup-assistant \
   ros-jazzy-moveit-resources-panda-moveit-config \
   ros-jazzy-moveit-resources-panda-description

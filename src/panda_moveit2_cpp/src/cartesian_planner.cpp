@@ -4,7 +4,7 @@
  */
 
 #include <rclcpp/rclcpp.hpp>
-#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/move_group_interface/move_group_interface.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <thread>
 #include <vector>
@@ -45,16 +45,15 @@ int main(int argc, char** argv)
 
     moveit_msgs::msg::RobotTrajectory trajectory;
     const double eef_step = 0.01;        // 1cm step resolution
-    const double jump_threshold = 0.0;   // 0 disables jump detection
 
-    double fraction = move_group.computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory);
+    double fraction = move_group.computeCartesianPath(waypoints, eef_step, trajectory);
 
     RCLCPP_INFO(LOGGER, "Cartesian path computed: %.1f%% achievable", fraction * 100.0);
 
     if (fraction > 0.90)
     {
         moveit::planning_interface::MoveGroupInterface::Plan plan;
-        plan.trajectory_ = trajectory;
+        plan.trajectory = trajectory;
         move_group.execute(plan);
     }
     else

@@ -2,48 +2,57 @@
 """
 Planner benchmarking script — rigorously compares solve times, success rates,
 and trajectory metrics across OMPL planners (RRTConnect, PRM, LBKPIECE, RRTstar).
-Exports results to CSV and generates comparison plots.
+Exports results to CSV and prints summary metrics.
 """
 
-import rclpy
-import time
 import csv
-import os
 import math
-from moveit.planning import MoveItPy
+import os
+import time
+
 from geometry_msgs.msg import PoseStamped
+from moveit.planning import MoveItPy, PlanRequestParameters
+from panda_moveit2_tutorials.moveit_config_helper import clean_exit, get_moveit_config_dict
+import rclpy
 
 
 def calculate_trajectory_length(trajectory):
     """Calculate joint-space Euclidean path length in radians."""
-    if not trajectory or not trajectory.joint_trajectory.points:
+    if not trajectory:
         return 0.0
-    pts = trajectory.joint_trajectory.points
-    total_length = 0.0
-    for i in range(1, len(pts)):
-        p_prev = pts[i - 1].positions
-        p_curr = pts[i].positions
-        dist = math.sqrt(sum((c - p) ** 2 for p, c in zip(p_prev, p_curr)))
-        total_length += dist
-    return total_length
+    try:
+        msg = trajectory.get_robot_trajectory_msg()
+        pts = msg.joint_trajectory.points
+        if not pts:
+            return 0.0
+        total_length = 0.0
+        for i in range(1, len(pts)):
+            p_prev = pts[i - 1].positions
+            p_curr = pts[i].positions
+            dist = math.sqrt(sum((c - p) ** 2 for p, c in zip(p_prev, p_curr)))
+            total_length += dist
+        return total_length
+    except Exception:
+        return 0.0
 
 
 def benchmark_planners():
     rclpy.init()
-    node_name = "planner_benchmarker"
-    moveit = MoveItPy(node_name=node_name)
+    node_name = "planner_benchmark"
+    config_dict = get_moveit_config_dict()
+    moveit = MoveItPy(node_name=node_name, config_dict=config_dict)
     panda_arm = moveit.get_planning_component("panda_arm")
 
     # Define standard target pose
     target = PoseStamped()
     target.header.frame_id = "panda_link0"
-    target.pose.position.x = 0.45
+    target.pose.position.x = 0.40
     target.pose.position.y = 0.20
     target.pose.position.z = 0.50
-    target.pose.orientation.x = 0.924
-    target.pose.orientation.y = -0.383
-    target.pose.orientation.z = 0.0
     target.pose.orientation.w = 0.0
+    target.pose.orientation.x = 1.0
+    target.pose.orientation.y = 0.0
+    target.pose.orientation.z = 0.0
 
     planners_to_test = [
         "RRTConnectkConfigDefault",
@@ -57,52 +66,46 @@ def benchmark_planners():
     print("\n" + "=" * 80)
     print(" 📊 RIGOROUS MOVEIT 2 OMPL PLANNER BENCHMARK (PANDA 7-DOF)")
     print(f" Trials per planner: {trials_per_planner} | Planning Time Budget: {planning_time_budget}s")
+    print(" Note on RRT*: RRT* is an asymptotically optimal anytime planner. Unlike")
+    print(" feasibility planners (RRTConnect, PRM, LBKPIECE) which return immediately upon")
+    print(f" finding a path, RRT* utilizes its entire time budget ({planning_time_budget}s) to continually")
+    print(" rewire and optimize path cost.")
     print("=" * 80)
 
     records = []
 
     for planner_id in planners_to_test:
-        print(f"\n[BENCHMARK] Setting planner pipeline to: {planner_id}")
+        print(f"\n[BENCHMARK] Testing planner: {planner_id}")
         
-        # Configure the planning pipeline with requested planner ID
-        planner_configured = False
         try:
-            if hasattr(panda_arm, "set_planner_id"):
-                panda_arm.set_planner_id(planner_id)
-                planner_configured = True
-            elif hasattr(panda_arm, "planning_pipeline"):
-                panda_arm.planning_pipeline.set_planner_id(planner_id)
-                planner_configured = True
-            else:
-                print(f"  [WARN] Neither set_planner_id nor planning_pipeline found on planning component.")
+            params = PlanRequestParameters(moveit, "ompl")
+            params.planner_id = planner_id
+            params.planning_time = planning_time_budget
         except Exception as e:
-            print(f"  [ERROR] Failed to configure planner '{planner_id}': {e}")
-            print(f"  [INFO] Skipping trials for '{planner_id}' to avoid recording invalid data.")
-            continue
-
-        if not planner_configured:
-            print(f"  [WARN] Could not verify planner configuration for '{planner_id}'. Skipping.")
+            print(f"  [ERROR] Failed to instantiate PlanRequestParameters for '{planner_id}': {e}")
             continue
 
         for trial in range(1, trials_per_planner + 1):
-            panda_arm.set_start_state_to_current_state()
+            panda_arm.set_start_state(configuration_name="ready")
             panda_arm.set_goal_state(pose_stamped_msg=target, pose_link="panda_link8")
 
             t_start = time.perf_counter()
-            plan_res = panda_arm.plan()
+            plan_res = panda_arm.plan(single_plan_parameters=params)
             t_end = time.perf_counter()
 
             latency_ms = (t_end - t_start) * 1000.0
 
-            if plan_res and plan_res.trajectory:
+            if plan_res and plan_res.trajectory and len(plan_res.trajectory) > 0:
                 success = True
-                pts_count = len(plan_res.trajectory.joint_trajectory.points)
+                pts_count = len(plan_res.trajectory)
                 traj_len = calculate_trajectory_length(plan_res.trajectory)
-                print(f"  Trial {trial}: SUCCESS | Latency: {latency_ms:.2f} ms | Waypoints: {pts_count} | Path Length: {traj_len:.3f} rad")
+                duration = plan_res.trajectory.duration
+                print(f"  Trial {trial}: SUCCESS | Latency: {latency_ms:.2f} ms | Waypoints: {pts_count} | Duration: {duration:.2f}s | Path Length: {traj_len:.3f} rad")
             else:
                 success = False
                 pts_count = 0
                 traj_len = 0.0
+                duration = 0.0
                 print(f"  Trial {trial}: FAILED | Latency: {latency_ms:.2f} ms")
 
             records.append({
@@ -111,13 +114,14 @@ def benchmark_planners():
                 "success": success,
                 "latency_ms": round(latency_ms, 2),
                 "waypoints": pts_count,
+                "duration_s": round(duration, 2),
                 "path_length_rad": round(traj_len, 3)
             })
 
     # Export records to CSV
-    csv_file = "benchmark_results.csv"
+    csv_file = "/tmp/benchmark_results.csv"
     with open(csv_file, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["planner", "trial", "success", "latency_ms", "waypoints", "path_length_rad"])
+        writer = csv.DictWriter(f, fieldnames=["planner", "trial", "success", "latency_ms", "waypoints", "duration_s", "path_length_rad"])
         writer.writeheader()
         writer.writerows(records)
 
@@ -137,9 +141,12 @@ def benchmark_planners():
         avg_len = sum(successful_lens) / len(successful_lens) if successful_lens else 0.0
 
         print(f"{p_name:<26} | {rate:<12.1f}% | {avg_lat:<17.2f} | {avg_len:<15.3f}")
-    print("=" * 80 + "\n")
+    print("=" * 80)
+    print(" Note: The observed success rate reflects a sample of 5 trials per planner")
+    print(" under this specific start/goal configuration and is not an absolute guarantee")
+    print(" of universal planning reliability across all arbitrary robot states.\n")
 
-    rclpy.shutdown()
+    clean_exit(0)
 
 
 def main():

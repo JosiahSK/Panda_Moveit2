@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from setuptools import setup, find_packages
 
 package_name = 'panda_moveit2_tutorials'
@@ -10,14 +12,14 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/panda_demo.launch.py']),
-        ('share/' + package_name + '/config', ['config/ompl_planning.yaml']),
+        ('share/' + package_name + '/launch', glob('launch/*.launch.py')),
+        ('share/' + package_name + '/config', glob('config/*.yaml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='JosiahSK',
     maintainer_email='your.email@example.com',
-    description='MoveIt 2 Panda tutorial Python package (ROS 2 Humble)',
+    description='MoveIt 2 Franka Panda tutorials for ROS 2 Jazzy Jalisco',
     license='MIT',
     tests_require=['pytest'],
     entry_points={

@@ -137,7 +137,11 @@ ros2 launch moveit_resources_panda_moveit_config demo.launch.py
 ```bash
 sudo apt update && sudo apt install -y \
   ros-jazzy-moveit \
+  ros-jazzy-moveit-py \
+  ros-jazzy-moveit-configs-utils \
   ros-jazzy-moveit-ros-planning-interface \
+  ros-jazzy-moveit-visual-tools \
+  ros-jazzy-moveit-resources-panda-moveit-config \
   ros-jazzy-franka-ros2 \
   ros-jazzy-ros2-control \
   ros-jazzy-ros2-controllers
@@ -156,35 +160,53 @@ source install/setup.bash
 
 ### 3. Launch Panda in RViz
 
-In your first terminal, launch the MoveIt 2 demo environment:
+In your first terminal, launch the MoveIt 2 demo environment (includes RViz 2, `move_group`, robot state publisher, and fake controllers):
 
 ```bash
-ros2 launch moveit_resources_panda_moveit_config demo.launch.py
+ros2 launch panda_moveit2_tutorials panda_demo.launch.py
 ```
 
-*RViz will open displaying the Franka Panda arm with the MotionPlanning display plugin loaded.*
+*Alternatively, the upstream launch `ros2 launch moveit_resources_panda_moveit_config demo.launch.py` is also fully supported.*
 
 ---
 
 ## 🎮 Hands-On Task Catalog & Execution Guide
 
-Open a **second terminal**, source your workspace, and run any of the tasks below:
+Open a **second terminal**, source your workspace, and launch any of the tutorial nodes:
 
 ```bash
 source ~/ros2_ws/install/setup.bash
 ```
 
+> **Tip:** You can launch tutorials using either `ros2 launch` (recommended, feeds all MoveIt parameters automatically) or `ros2 run` (our nodes contain integrated configuration builders).
+>
+> ```bash
+> # Recommended launch command:
+> ros2 launch panda_moveit2_tutorials run_tutorial.launch.py tutorial_node:=<tutorial_node_name>
+>
+> # Direct execution command:
+> ros2 run panda_moveit2_tutorials <tutorial_node_name>
+> ```
+
 ### 🐍 Python Tasks (`panda_moveit2_tutorials`)
 
-| Task # | Command | What It Does & What to Watch For in RViz |
+| Task # | Recommended Launch Command | What It Does & What to Watch For in RViz |
 |---|---|---|
-| **Task 1: Basic Joint Planning** | `ros2 run panda_moveit2_tutorials basic_motion_planner` | **Joint-space motion**: Commands the robot first to predefined `ready` pose, then directly sets individual joint radian angles (`panda_joint1` to `panda_joint7`). Watch the arm transition between joint states. |
-| **Task 2: Cartesian Pose Target** | `ros2 run panda_moveit2_tutorials pose_goal_planner` | **Inverse Kinematics (IK)**: Sets a 6-DOF Cartesian target pose $(x=0.307, y=0.0, z=0.590)$ with gripper pointing down. MoveIt calculates the inverse kinematics and executes smooth trajectory. |
-| **Task 3: Cartesian Inspection Path** | `ros2 run panda_moveit2_tutorials cartesian_path_planner` | **Continuous Waypoints**: Generates a straight-line rectangular inspection pattern $(20\text{cm} \times 20\text{cm})$ in front of the robot. Demonstrates multi-waypoint straight-line Cartesian execution. |
-| **Task 4: Collision Avoidance Scene** | `ros2 run panda_moveit2_tutorials collision_avoidance_demo` | **Dynamic Obstacle Avoidance**: Spawns a table and a tall red wall obstacle directly in front of the arm. MoveIt dynamically plans an arc *over and around* the barrier without touching it, then cleans up the scene. |
-| **Task 5: Path Constraints** | `ros2 run panda_moveit2_tutorials constrained_motion_demo` | **Carrying Liquid Demo**: Enforces an `OrientationConstraint` keeping the gripper strictly vertical ($\pm 0.25\text{ rad}$) throughout a long sideways trajectory. Perfect for showing students how to carry a full glass of water. |
-| **Task 6: Pick & Place Pipeline** | `ros2 run panda_moveit2_tutorials pick_and_place` | **Full 9-Stage Grasp Pipeline**: Approaches object from above $\to$ opens gripper $\to$ descends $\to$ grasps $\to$ lifts $\to$ translates $\to$ places on destination platform $\to$ opens fingers $\to$ returns home. |
-| **Task 7: Planner Benchmarking** | `ros2 run panda_moveit2_tutorials planner_benchmark` | **Algorithm Comparison**: Benchmarks `RRTConnect`, `PRM`, and `LBKPIECE` over 5 runs each. Prints real-time planning times and success rate statistics directly to terminal. |
+| **Task 1: Basic Joint Planning** | `ros2 launch panda_moveit2_tutorials run_tutorial.launch.py tutorial_node:=basic_motion_planner` | **Joint-space motion**: Commands the robot first to predefined `ready` pose, then directly sets individual joint radian angles (`panda_joint1` to `panda_joint7`). Watch the arm transition between joint states. |
+| **Task 2: Cartesian Pose Target** | `ros2 launch panda_moveit2_tutorials run_tutorial.launch.py tutorial_node:=pose_goal_planner` | **Inverse Kinematics (IK)**: Sets a 6-DOF Cartesian target pose $(x=0.307, y=0.0, z=0.590)$ with gripper pointing down. MoveIt calculates inverse kinematics and executes smooth trajectory. |
+| **Task 3: Cartesian Inspection Path** | `ros2 launch panda_moveit2_tutorials run_tutorial.launch.py tutorial_node:=cartesian_path_planner` | **Continuous Waypoints**: Generates a straight-line rectangular inspection pattern in front of the robot using the Pilz `LIN` planner. Demonstrates multi-waypoint straight-line Cartesian execution. |
+| **Task 4: Collision Avoidance Scene** | `ros2 launch panda_moveit2_tutorials run_tutorial.launch.py tutorial_node:=collision_avoidance_demo` | **Dynamic Obstacle Avoidance**: Spawns a table and barrier obstacle in the planning scene. MoveIt dynamically plans an arc *over and around* the barrier without touching it, then cleans up the scene. |
+| **Task 5: Path Constraints** | `ros2 launch panda_moveit2_tutorials run_tutorial.launch.py tutorial_node:=constrained_motion_demo` | **Carrying Liquid Demo**: Enforces an `OrientationConstraint` keeping the gripper strictly vertical ($\pm 0.35\text{ rad}$) throughout a long sideways trajectory. Perfect for demonstrating end-effector orientation preservation. |
+| **Task 6: Pick & Place Pipeline** | `ros2 launch panda_moveit2_tutorials run_tutorial.launch.py tutorial_node:=pick_and_place` | **Full 9-Stage Grasp Pipeline**: Pre-grasp approach $\to$ opens gripper $\to$ descends $\to$ attaches object geometrically $\to$ lifts $\to$ translates $\to$ places on destination surface $\to$ releases $\to$ returns home. *(Note: Uses `AttachedCollisionObject` for kinematic collision awareness during transfer).* |
+| **Task 7: Planner Benchmarking** | `ros2 launch panda_moveit2_tutorials run_tutorial.launch.py tutorial_node:=planner_benchmark` | **Algorithm Comparison**: Benchmarks `RRTConnect`, `PRM`, `LBKPIECE`, and `RRTstar` over 5 trials each. Compares latency, trajectory duration, path length, and exports results to CSV. |
+
+---
+
+### ⚠️ Planning vs. Execution: What Students Should Know
+
+1. **Planning (`panda_arm.plan()`)**: Solves kinematic and collision-avoidance equations offline to find a collision-free path. Planning does not require active hardware or controllers.
+2. **Execution (`moveit.execute(trajectory)`)**: Transmits the calculated trajectory waypoints to the active `ros2_control` joint trajectory controller (`/panda_arm_controller/follow_joint_trajectory`). If controllers or action servers are offline, planning still succeeds, but execution is safely aborted with an informative log message.
+3. **Simulated Pick & Place**: In educational kinematic simulation, physical contact dynamics and friction are not modeled; grasping is simulated by attaching the object geometry (`AttachedCollisionObject`) to the gripper links so MoveIt checks for collisions between the carried object and the environment during transfer.
 
 ---
 
@@ -206,7 +228,7 @@ High-performance native C++ implementations using `moveit::planning_interface::M
 | # | Lesson | Topic | Difficulty |
 |---|--------|-------|------------|
 | 00 | [Overview](docs/00_overview.md) | MoveIt 2 architecture, concepts | 🟢 Beginner |
-| 01 | [Installation](docs/01_installation.md) | Full setup guide for Humble | 🟢 Beginner |
+| 01 | [Installation](docs/01_installation.md) | Full setup guide for Jazzy | 🟢 Beginner |
 | 02 | [RViz Basics](docs/02_rviz_basics.md) | MoveIt plugin, interactive markers | 🟢 Beginner |
 | 03 | [Python Planning](docs/03_motion_planning_python.md) | MoveGroupInterface in Python | 🟡 Intermediate |
 | 04 | [C++ Planning](docs/04_motion_planning_cpp.md) | MoveGroupInterface in C++ | 🟡 Intermediate |
@@ -224,7 +246,7 @@ High-performance native C++ implementations using `moveit::planning_interface::M
 |---------|----------------|----------------|
 | ROS 2 Version | Humble Hawksbill (LTS) | **Jazzy Jalisco** ← **(you are here)** |
 | Ubuntu | 22.04 LTS | **24.04 LTS** |
-| MoveIt 2 | 2.5.x | **2.8.x** |
+| MoveIt 2 | 2.5.x | **2.12.x** |
 | Python | 3.10 | **3.12** |
 | Key Differences | Classic `moveit_resources` | **New `moveit_configs_utils` API** |
 | Status | ✅ Supported until May 2027 | ✅ **Active Development** |
