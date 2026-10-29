@@ -180,7 +180,10 @@ move_group.clearPathConstraints();
 
 ![Constraints Benchmark](images/constraints_benchmark.png)
 
-Constraints make planning harder. This table shows empirical success rates:
+> [!NOTE]
+> **Pedagogical Reference Note:** The table and graph below summarize baseline empirical trends observed when restricting state space search volume with MoveIt path constraints. Strict orientation limits require rejection sampling or constrained manifold projection, naturally increasing computation time.
+
+Constraints make planning harder. Typical comparative trends:
 
 | Constraint Type | Success Rate | Avg Plan Time |
 |----------------|-------------|---------------|

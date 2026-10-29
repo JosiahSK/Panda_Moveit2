@@ -147,7 +147,7 @@ sudo apt update && sudo apt install -y \
 
 ```bash
 mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
-git clone -b jazzy https://github.com/JosiahSK/panda_moveit2_tutorial.git
+git clone -b jazzy https://github.com/JosiahSK/Panda_Moveit2.git
 cd ~/ros2_ws
 rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install

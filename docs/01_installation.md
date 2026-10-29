@@ -83,7 +83,7 @@ sudo apt install -y \
 mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
 
 # Clone the jazzy branch
-git clone -b jazzy https://github.com/JosiahSK/panda_moveit2_tutorial.git
+git clone -b jazzy https://github.com/JosiahSK/Panda_Moveit2.git
 
 # Install all ROS dependencies
 cd ~/ros2_ws
