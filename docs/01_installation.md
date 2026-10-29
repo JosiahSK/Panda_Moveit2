@@ -149,7 +149,7 @@ rosdep update --rosdistro jazzy
 
 ### ❌ ImportError with MoveIt Python bindings
 ```bash
-sudo apt install -y python3-moveit-ros-planning-interface
+sudo apt install -y ros-jazzy-moveit-py
 ```
 
 ---

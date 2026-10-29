@@ -13,6 +13,7 @@ from moveit_configs_utils import MoveItConfigsBuilder
 def get_moveit_config_dict():
     """Build and return complete MoveIt 2 configuration dictionary for Franka Panda on ROS 2 Jazzy."""
     builder = MoveItConfigsBuilder("moveit_resources_panda")
+    builder.trajectory_execution(file_path="config/gripper_moveit_controllers.yaml")
     mc = builder.to_dict()
 
     # Define loaded planning pipelines

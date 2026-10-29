@@ -30,9 +30,9 @@ class PandaPickPlace:
     PLACE_X, PLACE_Y = 0.40, -0.15
 
     TABLE_Z = TABLE_HEIGHT / 2.0
-    OBJECT_Z = TABLE_HEIGHT + (OBJECT_HEIGHT / 2.0)  # 0.45m
-    APPROACH_OFFSET = 0.15                           # 0.60m approach height
-    GRASP_Z = 0.53                                   # Link8 height for finger grasp
+    OBJECT_Z = TABLE_HEIGHT + (OBJECT_HEIGHT / 2.0) + 0.002  # 0.452m (2mm clearance above 0.40m table)
+    APPROACH_OFFSET = 0.20                                   # 0.652m approach height (clearance above 0.502m can top)
+    GRASP_Z = 0.582                                          # Link8 height for finger grasp without palm collision
 
     def __init__(self):
         print("[INFO] Initializing MoveItPy for pick_and_place...")
@@ -40,6 +40,7 @@ class PandaPickPlace:
         self.arm = self.moveit.get_planning_component("panda_arm")
         self.gripper = self.moveit.get_planning_component("hand")
         self.psm = self.moveit.get_planning_scene_monitor()
+        self._is_attached = False
 
     def setup_scene(self):
         """Add support surface and target cylinder object to the PlanningScene."""
@@ -85,7 +86,14 @@ class PandaPickPlace:
         print("[SCENE] Planning scene ready with table and target object.")
 
     def attach_object(self):
-        """Attach target cylinder to panda_hand for kinematic collision awareness during transfer."""
+        """Attach target cylinder to panda_hand for kinematic collision awareness during transfer.
+
+        Educational Note:
+        In this simulation tutorial, attaching modifies MoveIt's Allowed Collision
+        Matrix (ACM) via touch_links so that the gripper fingers can close around the object
+        without FCL collision aborts. This is purely a kinematic planning model; it does NOT
+        simulate physical grasping dynamics and does not prove physical grasp acquisition.
+        """
         att = AttachedCollisionObject()
         att.link_name = "panda_hand"
         att.object.header.frame_id = "panda_hand"
@@ -94,21 +102,28 @@ class PandaPickPlace:
         att.object.operation = CollisionObject.ADD
         with self.psm.read_write() as scene:
             scene.process_attached_collision_object(att)
+        self._is_attached = True
         print("[SCENE] Object 'target_can' attached to panda_hand.")
 
     def detach_object(self):
         """Detach object from gripper upon placement."""
+        if not self._is_attached:
+            return
         att = AttachedCollisionObject()
         att.link_name = "panda_hand"
         att.object.id = "target_can"
         att.object.operation = CollisionObject.REMOVE
         with self.psm.read_write() as scene:
             scene.process_attached_collision_object(att)
+        self._is_attached = False
         print("[SCENE] Object 'target_can' detached from panda_hand.")
 
     def cleanup_scene(self):
-        """Clean up scene collision objects."""
+        """Clean up scene collision objects and ensure detachment."""
         print("[SCENE] Cleaning up collision objects...")
+        if self._is_attached:
+            self.detach_object()
+
         table = CollisionObject()
         table.header.frame_id = "panda_link0"
         table.id = "support_table"
@@ -153,7 +168,10 @@ class PandaPickPlace:
         p = self.gripper.plan()
         if p and p.trajectory:
             execute_trajectory(self.moveit, p.trajectory)
-        time.sleep(0.3)
+            time.sleep(0.3)
+            return True
+        print("[WARN] Failed planning gripper 'open' motion.")
+        return False
 
     def close_gripper(self):
         print("[INFO] Commanding gripper fingers to 'close'...")
@@ -162,7 +180,10 @@ class PandaPickPlace:
         p = self.gripper.plan()
         if p and p.trajectory:
             execute_trajectory(self.moveit, p.trajectory)
-        time.sleep(0.3)
+            time.sleep(0.3)
+            return True
+        print("[WARN] Failed planning gripper 'close' motion.")
+        return False
 
     def execute_pipeline(self):
         print("\n" + "=" * 70)
@@ -178,6 +199,9 @@ class PandaPickPlace:
         p = self.arm.plan()
         if p and p.trajectory:
             execute_trajectory(self.moveit, p.trajectory)
+        else:
+            print("[WARN] Failed planning arm motion to 'ready' pose.")
+            return False
 
         # Stage 2: Approach Pick (Pre-grasp)
         print("Stage 2: Moving to pre-grasp approach pose above object...")
@@ -186,17 +210,29 @@ class PandaPickPlace:
 
         # Stage 3: Open gripper
         print("Stage 3: Opening gripper fingers...")
-        self.open_gripper()
+        if not self.open_gripper():
+            return False
 
         # Stage 4: Descend to grasp
         print("Stage 4: Descending to grasp height...")
         if not self._move_arm(self.PICK_X, self.PICK_Y, self.GRASP_Z):
             return False
 
-        # Stage 5: Grasp & Attach
-        print("Stage 5: Closing gripper and attaching object geometrically...")
-        self.close_gripper()
+        # Stage 5: Attach & Grasp
+        # Educational Note on Simulation vs. Real Hardware:
+        # In MoveIt kinematic simulation, commanding the gripper to 'close' (0.0m) while
+        # an unattached collision object sits between the fingers causes FCL collision
+        # detection to fail because the fingers attempt to penetrate the solid object.
+        # Calling attach_object() first adds touch_links to the Allowed Collision Matrix (ACM),
+        # allowing collision-free trajectory planning.
+        # IMPORTANT: Planning-scene attachment only updates MoveIt's geometric collision
+        # model; it does NOT simulate physical grasping or prove the object is held.
+        # On real hardware, the gripper would use force/current sensing (e.g., Franka Grasp
+        # action) and attach_object() should only be called AFTER confirming contact feedback.
+        print("Stage 5: Attaching object geometrically and closing gripper...")
         self.attach_object()
+        if not self.close_gripper():
+            return False
 
         # Stage 6: Lift object
         print("Stage 6: Lifting object vertically...")
@@ -215,9 +251,11 @@ class PandaPickPlace:
 
         # Stage 9: Release, Detach, and Retreat
         print("Stage 9: Releasing object and retreating...")
-        self.open_gripper()
+        if not self.open_gripper():
+            return False
         self.detach_object()
-        self._move_arm(self.PLACE_X, self.PLACE_Y, self.OBJECT_Z + self.APPROACH_OFFSET)
+        if not self._move_arm(self.PLACE_X, self.PLACE_Y, self.OBJECT_Z + self.APPROACH_OFFSET):
+            return False
 
         # Return Home
         print("Returning arm to home 'ready' pose...")
@@ -226,6 +264,9 @@ class PandaPickPlace:
         p = self.arm.plan()
         if p and p.trajectory:
             execute_trajectory(self.moveit, p.trajectory)
+        else:
+            print("[WARN] Failed planning return to 'ready' pose.")
+            return False
 
         print("\n🎉 PICK AND PLACE PIPELINE SUCCESSFULLY COMPLETED!\n")
         return True
