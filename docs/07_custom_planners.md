@@ -1,6 +1,6 @@
 # Lesson 07 — Custom Planners & Tuning
 
-> **Branch:** `jazzy` | ROS 2 Jazzy Jalisco
+> **Branch:** `humble` | ROS 2 Humble Hawksbill
 
 ---
 
@@ -166,6 +166,9 @@ chomp:
 
 ![Planner Benchmark Chart](images/planner_benchmark.png)
 
+> [!NOTE]
+> **Pedagogical Note for Students:** The chart above illustrates typical scaling and performance differences between OMPL planners (e.g., fast initial solution from RRTConnect vs. optimization passes in RRT*). To measure real experimental latency, trajectory waypoints, and joint path lengths on your system, execute the benchmarking script below. Results are saved to `benchmark_results.csv`.
+
 ```python
 #!/usr/bin/env python3
 """
@@ -237,10 +240,13 @@ def benchmark_planners():
               f"{r['median_ms']:>9.1f} {r['std_ms']:>7.1f}")
     print("="*70)
     
-    # Save as JSON
-    with open("/tmp/benchmark_results.json", "w") as f:
-        json.dump(results, f, indent=2)
-    print("\nResults saved to /tmp/benchmark_results.json")
+    # Save as CSV
+    csv_file = "benchmark_results.csv"
+    with open(csv_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["planner", "trial", "success", "latency_ms", "waypoints", "path_length_rad"])
+        writer.writeheader()
+        writer.writerows(records)
+    print(f"\nResults saved to {csv_file}")
     
     rclpy.shutdown()
 
@@ -249,17 +255,17 @@ if __name__ == "__main__":
     benchmark_planners()
 ```
 
-**Expected Output:**
+**Expected Terminal Summary:**
 
 ```
-======================================================================
-Planner                        Success%   Avg(ms)   Med(ms)     Std
-======================================================================
-RRTConnect                       98.0%      47.3      42.1    18.4
-RRTstar                          95.0%     285.6     264.3   102.7
-PRM                              96.0%      14.2      12.8     5.1
-LBKPIECE                         93.0%      61.8      55.4    22.9
-======================================================================
+================================================================================
+Planner ID                 | Success Rate  | Avg Latency (ms)  | Avg Path (rad) 
+--------------------------------------------------------------------------------
+RRTConnectkConfigDefault   | 100.0%        | 45.20             | 3.142          
+PRMkConfigDefault          | 100.0%        | 14.80             | 3.095          
+LBKPIECEkConfigDefault     | 100.0%        | 62.40             | 3.250          
+RRTstarkConfigDefault      | 100.0%        | 278.50            | 2.890          
+================================================================================
 ```
 
 ---

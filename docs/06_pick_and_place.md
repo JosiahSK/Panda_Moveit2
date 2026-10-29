@@ -1,6 +1,6 @@
 # Lesson 06 — Pick & Place Pipeline
 
-> **Branch:** `jazzy` | ROS 2 Jazzy Jalisco
+> **Branch:** `humble` | ROS 2 Humble Hawksbill
 
 ---
 

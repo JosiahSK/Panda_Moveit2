@@ -65,11 +65,24 @@ def benchmark_planners():
         print(f"\n[BENCHMARK] Setting planner pipeline to: {planner_id}")
         
         # Configure the planning pipeline with requested planner ID
+        planner_configured = False
         try:
-            panda_arm.set_planner_id(planner_id)
-        except Exception:
-            # Fallback for configuration variants
-            pass
+            if hasattr(panda_arm, "set_planner_id"):
+                panda_arm.set_planner_id(planner_id)
+                planner_configured = True
+            elif hasattr(panda_arm, "planning_pipeline"):
+                panda_arm.planning_pipeline.set_planner_id(planner_id)
+                planner_configured = True
+            else:
+                print(f"  [WARN] Neither set_planner_id nor planning_pipeline found on planning component.")
+        except Exception as e:
+            print(f"  [ERROR] Failed to configure planner '{planner_id}': {e}")
+            print(f"  [INFO] Skipping trials for '{planner_id}' to avoid recording invalid data.")
+            continue
+
+        if not planner_configured:
+            print(f"  [WARN] Could not verify planner configuration for '{planner_id}'. Skipping.")
+            continue
 
         for trial in range(1, trials_per_planner + 1):
             panda_arm.set_start_state_to_current_state()

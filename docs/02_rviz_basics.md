@@ -1,6 +1,6 @@
 # Lesson 02 — RViz & MoveIt 2 Plugin Basics
 
-> **Branch:** `jazzy` | ROS 2 Jazzy Jalisco
+> **Branch:** `humble` | ROS 2 Humble Hawksbill
 
 ---
 
