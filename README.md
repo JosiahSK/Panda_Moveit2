@@ -213,6 +213,8 @@ High-performance native C++ implementations using `moveit::planning_interface::M
 | 05 | [Constraints](docs/05_constraints.md) | Joint & path constraints | 🟡 Intermediate |
 | 06 | [Pick & Place](docs/06_pick_and_place.md) | Full grasp pipeline | 🔴 Advanced |
 | 07 | [Custom Planners](docs/07_custom_planners.md) | Swap planners, tune parameters | 🔴 Advanced |
+| 08 | [Kinematics & Redundancy](docs/08_kinematics_and_redundancy.md) | FK, IK, coordinate frames & null-space | 🔴 Advanced |
+| 📋 | [Repository Audit](docs/REPOSITORY_AUDIT.md) | Technical audit & QA verification report | 🔍 Engineering |
 
 ---
 
